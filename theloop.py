@@ -5,7 +5,7 @@ from tensorboardX import SummaryWriter
 from tqdm import tqdm
 
 class TheLoop:
-    def __init__(self, model, criterion, batch_callback, logdir="./logs"
+    def __init__(self, model, criterion, batch_callback, logdir="./logs",
                 device="cpu", val_callback=None, val_rate=-1,
                 checkpoint_dir="./checkpoints", checkpoint_rate=-1,
                 name="experiment"):
@@ -20,6 +20,7 @@ class TheLoop:
                 self.checkpoint_rate = checkpoint_rate
                 self.name = name
                 self.loss_key = "loss"
+                self.val_rate = val_rate
 
     @staticmethod
     def tb_log(writer, data, it):
@@ -27,29 +28,30 @@ class TheLoop:
             writer.add_scalar(k, v, it)
 
 
-    def a(self, train_dataset, val_dataset=None,
-          batch_size=32, n_workers=1, shuffle=True, n_epoch=10):
+    def a(self, train_dataset, val_dataset=None, batch_size=32, n_workers=1,
+          shuffle=True, n_epoch=10, log_dir=None):
         train_dl = DataLoader(train_dataset, batch_size=batch_size,
                               num_workers=n_workers, shuffle=shuffle)
+        val_dl = None
 
         if val_dataset is not None:
             val_dl = DataLoader(val_dataset, batch_size=batch_size,
                                 num_workers=n_workers, shuffle=shuffle)
 
 
-        self.ka(train_dl, val_dl, n_epoch)
+        self.ka(train_dl, val_dl, n_epoch, log_dir)
 
-    def ka(self, train_dataloader, val_dataloader=None, n_epoch=10):
+    def ka(self, train_dataloader, val_dataloader=None, n_epoch=10, log_dir=None):
         it = 0
         writer = SummaryWriter(log_dir=log_dir, filename_suffix=self.name)
 
         print("STARTING THE LOOP")
-        os.makedirs(args.checkpoint_dir, exist_ok=True)
+        os.makedirs(self.checkpoint_dir, exist_ok=True)
 
 
         for epoch in range(n_epoch):
             print("  |￣￣￣￣￣￣|\n  |  EPOCH: %s  |\n  |＿＿＿＿＿＿|\n(\\__/) || \n(•ㅅ•) || \n/ 　 づ" % epoch)
-            tqdm_dl = tqdm(train_dloader)
+            tqdm_dl = tqdm(train_dataloader)
 
             for i, batch in enumerate(tqdm_dl):
                 batch_out = self.batch_callback(self.model, self.criterion,
@@ -60,19 +62,22 @@ class TheLoop:
                 tqdm_dl.set_description('BATCH %i' % i)
                 tqdm_dl.set_postfix(loss=batch_out[self.loss_key])
 
-                if sel.val_rate > 0 and val_dataloader is not None:
+                if self.val_rate > 0 and val_dataloader is not None:
                     if it % self.val_rate == 0:
                         print("Starting validation")
 
-                        val_out = self.val_callback(model, val_dataloader, device)
+                        val_out = self.val_callback(self.model, val_dataloader,
+                                                    self.device)
                         self.tb_log(writer, val_out, it)
 
                         print("Validation ready")
 
-                if sel.checkpoint_rate > 0 and it % self.checkpoint_rate == 0:
+                if self.checkpoint_rate > 0 and it % self.checkpoint_rate == 0:
                         print("Save checkpoint")
 
                         torch.save(self.model.state_dict(),
                                     os.path.join(self.checkpoint_dir,
                                                  "%s_iter_%s_epoch_%s.pth" %
                                                  (self.name, epoch, it)))
+
+                it += 1
