@@ -1,18 +1,28 @@
 import torch
+from torch import nn
 from torch.utils.data import DataLoader
 import os
 from tensorboardX import SummaryWriter
 from tqdm import tqdm
 
 class TheLoop:
-    def __init__(self, model, criterion, batch_callback, logdir="./logs",
-                device="cpu", val_callback=None, val_rate=-1,
-                checkpoint_dir="./checkpoints", checkpoint_rate=-1,
+    def __init__(self, model, optimizer, criterion, batch_callback
+                val_callback=None,
+                logdir="./logs",
+                device="cpu",
+                val_rate=-1,
+                checkpoint_dir="./checkpoints",
+                checkpoint_rate=-1,
                 name="experiment"):
 
+                if type(self.criterion) == str:
+                    self.criterion = nn.__dict__[criterion]()
+                else:
+                    self.criterion = criterion
+
+                self.optimizer = optimizer
                 self.device = torch.device(device)
                 self.model = model.to(self.device)
-                self.criterion = criterion
                 self.batch_callback = batch_callback
                 self.val_callback = val_callback
                 self.logdir = logdir
@@ -54,20 +64,27 @@ class TheLoop:
             tqdm_dl = tqdm(train_dataloader)
 
             for i, batch in enumerate(tqdm_dl):
-                batch_out = self.batch_callback(self.model, self.criterion,
-                                                self.device, batch)
+                batch_out = self.batch_callback(model=self.model,
+                                                criterion=self.criterion,
+                                                device=self.device,
+                                                batch=batch)
+
+                loss = batch_out[self.loss_key].item()
+                self.optimizer.zero_grad()
+                loss.backward()
 
                 self.tb_log(writer, batch_out, it)
 
                 tqdm_dl.set_description('BATCH %i' % i)
-                tqdm_dl.set_postfix(loss=batch_out[self.loss_key])
+                tqdm_dl.set_postfix(loss=loss.item())
 
                 if self.val_rate > 0 and val_dataloader is not None:
                     if it % self.val_rate == 0:
                         print("Starting validation")
 
-                        val_out = self.val_callback(self.model, val_dataloader,
-                                                    self.device)
+                        val_out = self.val_callback(model=self.model,
+                                                    val_dataloader=val_dataloader,
+                                                    device=self.device)
                         self.tb_log(writer, val_out, it)
 
                         print("Validation ready")
