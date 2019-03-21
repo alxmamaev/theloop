@@ -1,12 +1,15 @@
 import torch
 from torch import nn
+from torch import optim
 from torch.utils.data import DataLoader
 import os
 from tensorboardX import SummaryWriter
 from tqdm import tqdm
 
 class TheLoop:
-    def __init__(self, model, optimizer, criterion, batch_callback
+    def __init__(self, model, criterion, batch_callback
+                optimizer="Adam",
+                optimizer_params={"lr":1e-4},
                 val_callback=None,
                 logdir="./logs",
                 device="cpu",
@@ -15,14 +18,16 @@ class TheLoop:
                 checkpoint_rate=-1,
                 name="experiment"):
 
-                if type(self.criterion) == str:
-                    self.criterion = nn.__dict__[criterion]()
-                else:
-                    self.criterion = criterion
-
-                self.optimizer = optimizer
                 self.device = torch.device(device)
                 self.model = model.to(self.device)
+
+                if type(criterion) == str:
+                    criterion = nn.__dict__[criterion]
+                if type(optimizer) == str:
+                    optimizer = optim.__dict__[optimizer]
+
+                self.optimizer = optimizer(self.model.parameters(), **optimizer_params)
+                self.criterion = criterion()
                 self.batch_callback = batch_callback
                 self.val_callback = val_callback
                 self.logdir = logdir
@@ -83,7 +88,7 @@ class TheLoop:
                         print("Starting validation")
 
                         val_out = self.val_callback(model=self.model,
-                                                    val_dataloader=val_dataloader,
+                                                    data=val_dataloader,
                                                     device=self.device)
                         self.tb_log(writer, val_out, it)
 
