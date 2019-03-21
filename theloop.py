@@ -7,16 +7,16 @@ from tensorboardX import SummaryWriter
 from tqdm import tqdm
 
 class TheLoop:
-    def __init__(self, model, criterion, batch_callback
-                optimizer="Adam",
-                optimizer_params={"lr":1e-4},
-                val_callback=None,
-                logdir="./logs",
-                device="cpu",
-                val_rate=-1,
-                checkpoint_dir="./checkpoints",
-                checkpoint_rate=-1,
-                name="experiment"):
+    def __init__(self, model, criterion, batch_callback,
+                 val_callback=None,
+                 optimizer="Adam",
+                 optimizer_params={"lr":1e-4},
+                 device="cpu",
+                 val_rate=-1,
+                 checkpoint_rate=-1,
+                 logdir="./logs",
+                 checkpoint_dir="./checkpoints",
+                 name="experiment"):
 
                 self.device = torch.device(device)
                 self.model = model.to(self.device)
