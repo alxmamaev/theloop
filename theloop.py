@@ -74,7 +74,7 @@ class TheLoop:
                                                 device=self.device,
                                                 batch=batch)
 
-                loss = batch_out[self.loss_key].item()
+                loss = batch_out[self.loss_key]
                 self.optimizer.zero_grad()
                 loss.backward()
 
