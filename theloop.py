@@ -103,3 +103,9 @@ class TheLoop:
                                                  (self.name, epoch, it)))
 
                 it += 1
+
+            print("Save checkpoint")
+            torch.save(self.model.state_dict(),
+                        os.path.join(self.checkpoint_dir,
+                                     "%s_final_epoch_%s.pth" %
+                                     (self.name, epoch)))
