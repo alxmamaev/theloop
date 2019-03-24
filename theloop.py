@@ -60,7 +60,7 @@ class TheLoop:
         it = 0
         writer = SummaryWriter(log_dir=log_dir, filename_suffix=self.name)
 
-        print("STARTING THE LOOP")
+        print("=====================\n||STARTING THE LOOP||\n=====================\n\n")
         os.makedirs(self.checkpoint_dir, exist_ok=True)
 
 
@@ -82,12 +82,12 @@ class TheLoop:
 
                 self.tb_log(writer, batch_out, it)
 
-                tqdm_dl.set_description('BATCH %i' % i)
+                tqdm_dl.set_description('BATCH %i; ITER %s' % (i, it))
                 tqdm_dl.set_postfix(loss=loss.item())
 
                 if self.val_rate > 0 and val_dataloader is not None:
                     if it % self.val_rate == 0:
-                        print("Starting validation")
+                        print("Starting validation...")
 
                         self.model.eval()
                         val_out = self.val_callback(model=self.model,
@@ -96,15 +96,14 @@ class TheLoop:
                         self.model.train()
                         self.tb_log(writer, val_out, it)
 
-                        print("Validation ready")
+                        print("Validation ready!")
 
                 if self.checkpoint_rate > 0 and it % self.checkpoint_rate == 0:
-                        print("Save checkpoint")
-
                         torch.save(self.model.state_dict(),
                                     os.path.join(self.checkpoint_dir,
                                                  "%s_iter_%s_epoch_%s.pth" %
                                                  (self.name, epoch, it)))
+                        print("Checkpoint saved")
 
                 it += 1
 
@@ -113,3 +112,17 @@ class TheLoop:
                         os.path.join(self.checkpoint_dir,
                                      "%s_final_epoch_%s.pth" %
                                      (self.name, epoch)))
+
+            print("=====================\n\n")
+
+        if self.val_callback is not None:
+            self.model.eval()
+            val_out = self.val_callback(model=self.model,
+                                        data=val_dataloader,
+                                        device=self.device)
+            self.model.train()
+
+            print("=================\n||FINAL METRICS||\n-----------------\n\n")
+            for k, v in val_out:
+                print("%s: %s" % k, v)
+            print("=================")
