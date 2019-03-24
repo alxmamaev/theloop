@@ -69,6 +69,7 @@ class TheLoop:
             tqdm_dl = tqdm(train_dataloader)
 
             for i, batch in enumerate(tqdm_dl):
+                self.model.train()
                 batch_out = self.batch_callback(model=self.model,
                                                 criterion=self.criterion,
                                                 device=self.device,
@@ -88,9 +89,11 @@ class TheLoop:
                     if it % self.val_rate == 0:
                         print("Starting validation")
 
+                        self.model.eval()
                         val_out = self.val_callback(model=self.model,
                                                     data=val_dataloader,
                                                     device=self.device)
+                        self.model.train()
                         self.tb_log(writer, val_out, it)
 
                         print("Validation ready")
