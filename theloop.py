@@ -124,5 +124,5 @@ class TheLoop:
 
             print("=================\n||FINAL METRICS||\n-----------------\n\n")
             for k, v in val_out:
-                print("%s: %s" % k, v)
+                print("%s: %s" % (k, v))
             print("=================")
