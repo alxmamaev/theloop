@@ -77,6 +77,7 @@ class TheLoop:
                 loss = batch_out[self.loss_key]
                 self.optimizer.zero_grad()
                 loss.backward()
+                self.optimizer.step()
 
                 self.tb_log(writer, batch_out, it)
 
