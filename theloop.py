@@ -123,6 +123,6 @@ class TheLoop:
             self.model.train()
 
             print("=================\n||FINAL METRICS||\n-----------------\n\n")
-            for k, v in val_out:
+            for k, v in val_out.items():
                 print("%s: %s" % (k, v))
             print("=================")
