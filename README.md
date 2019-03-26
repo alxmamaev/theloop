@@ -4,17 +4,14 @@
 ## Simple intro into-theloop in 30s
 
 ```python
+from tqdm import tqdm
+import torch
+from torch.nn import functional as F
 from torchvision.datasets import MNIST
 import torchvision.models as models
 import torchvision.transforms as transforms
 from theloop import TheLoop
-
-
-trans = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5,), (1.0,))])
-train_set = MNIST(root=root, train=True, transform=trans, download=True)
-test_set = MNIST(root=root, train=False, transform=trans, download=True)
-
-resnet18 = models.resnet18(pretrained=True)
+from sklearn.metrica import accuracy_score
 
 def batch_callback(**kwargs):
     model, batch, device, criterion = kwargs["model"], kwargs["batch"], kwargs["device"], kwargs["criterion"]
@@ -43,6 +40,13 @@ def val_callback(**kwargs):
     return {"accuracy": accuracy}
     
     
+    
+trans = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5,), (1.0,))])
+train_set = MNIST(root=root, train=True, transform=trans, download=True)
+test_set = MNIST(root=root, train=False, transform=trans, download=True)
+
+resnet18 = models.resnet18(pretrained=True)
+
  
 theloop = TheLoop(model, "CrossEntropyLoss", batch_callback,
                   val_callback=val_callback,
