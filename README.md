@@ -43,14 +43,15 @@ def val_callback(**kwargs):
 
     accuracy = accuracy_score(predict, ground_truth)
 
-    print("Accuracy:", accuracy)
     return {"accuracy": accuracy}
     
+    
+ 
  theloop = get_trainer(model, args.lr, args.device,
                           args.logdir, args.checkpoint_dir,
                           args.val_rate, args.checkpoint_rate)
 
-    theloop.a(train_dataset, val_dataset=test_dataset,
-              batch_size=args.batch_size, n_epoch=args.n_epoch)
+ theloop.a(train_dataset, val_dataset=test_dataset,
+           batch_size=args.batch_size, n_epoch=args.n_epoch)
 
 ```
