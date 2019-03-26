@@ -6,9 +6,11 @@
 ```python
 from torchvision.datasets import MNIST
 import torchvision.models as models
+import torchvision.transforms as transforms
 from theloop import TheLoop
 
 
+trans = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5,), (1.0,))])
 train_set = MNIST(root=root, train=True, transform=trans, download=True)
 test_set = MNIST(root=root, train=False, transform=trans, download=True)
 
