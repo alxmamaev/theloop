@@ -42,11 +42,16 @@ def val_callback(**kwargs):
     
     
  
- theloop = get_trainer(model, args.lr, args.device,
-                          args.logdir, args.checkpoint_dir,
-                          args.val_rate, args.checkpoint_rate)
+theloop = TheLoop(model, "CrossEntropyLoss", batch_callback,
+                  val_callback=val_callback,
+                  optimizer_params={"lr": lr},
+                  logdir=logdir,
+                  checkpoint_dir=checkpoint_dir,
+                  val_rate=val_rate,
+                  checkpoint_rate=checkpoint_rate,
+                  device=device)
 
- theloop.a(train_dataset, val_dataset=test_dataset,
+ theloop.a(train_set, val_dataset=test_set,
            batch_size=args.batch_size, n_epoch=args.n_epoch)
 
 ```
