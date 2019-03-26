@@ -15,10 +15,7 @@ test_set = MNIST(root=root, train=False, transform=trans, download=True)
 resnet18 = models.resnet18(pretrained=True)
 
 def batch_callback(**kwargs):
-    model = kwargs["model"]
-    batch = kwargs["batch"]
-    device = kwargs["device"]
-    criterion = kwargs["criterion"]
+    model, batch, device, criterion = kwargs["model"], kwargs["batch"], kwargs["device"], kwargs["criterion"]
 
     out = model(batch["tokens"].to(device))
     loss = criterion(out, batch["target"].to(device))
@@ -26,9 +23,7 @@ def batch_callback(**kwargs):
     return {"loss": loss}
     
 def val_callback(**kwargs):
-    model = kwargs["model"]
-    dloader = kwargs["data"]
-    device = kwargs["device"]
+    model, dloader, device = kwargs["model"], kwargs["data"], kwargs["device"]
 
     predict = []
     ground_truth = []
