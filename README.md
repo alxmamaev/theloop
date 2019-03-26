@@ -4,13 +4,14 @@
 ## Simple intro into-theloop in 30s
 
 ```python
-from tqdm import tqdm
+from theloop import TheLoop
+
 import torch
 from torch.nn import functional as F
 from torchvision.datasets import MNIST
 import torchvision.models as models
 import torchvision.transforms as transforms
-from theloop import TheLoop
+from tqdm import tqdm
 from sklearn.metrica import accuracy_score
 
 def batch_callback(**kwargs):
