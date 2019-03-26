@@ -57,7 +57,6 @@ theloop = TheLoop(model, "CrossEntropyLoss", batch_callback,
                   checkpoint_rate=1000,
                   device="cuda:0")
 
- theloop.a(train_set, val_dataset=test_set,
-           batch_size=32, n_epoch=10)
+theloop.a(train_set, val_dataset=test_set, batch_size=32, n_epoch=10)
 
 ```
