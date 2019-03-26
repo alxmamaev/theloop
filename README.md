@@ -44,14 +44,14 @@ def val_callback(**kwargs):
  
 theloop = TheLoop(model, "CrossEntropyLoss", batch_callback,
                   val_callback=val_callback,
-                  optimizer_params={"lr": lr},
-                  logdir=logdir,
-                  checkpoint_dir=checkpoint_dir,
-                  val_rate=val_rate,
-                  checkpoint_rate=checkpoint_rate,
-                  device=device)
+                  optimizer_params={"lr": 1e-4},
+                  logdir="./logdir",
+                  checkpoint_dir="./checkpoint_dir",
+                  val_rate=1000,
+                  checkpoint_rate=1000,
+                  device="cuda:0")
 
  theloop.a(train_set, val_dataset=test_set,
-           batch_size=args.batch_size, n_epoch=args.n_epoch)
+           batch_size=32, n_epoch=10)
 
 ```
