@@ -1,5 +1,6 @@
 import torch
 from torch import nn
+from random import randint
 from torch import optim
 from torch.utils.data import DataLoader
 import os
@@ -68,10 +69,6 @@ class TheLoop:
         return self.ka(train_dl, val_dl, n_epoch)
 
     def ka(self, train_dataloader, val_dataloader=None, n_epoch=10):
-
-        if self.using_tqdm_notebook:
-            tqdm = tqdm_notebook
-
         it = 0
         os.makedirs(self.logdir, exist_ok=True)
         os.makedirs(self.checkpoint_dir, exist_ok=True)
@@ -80,14 +77,21 @@ class TheLoop:
         best_checkpoint_score = None
         best_checkpoint_validation = None
 
-        writer = SummaryWriter(log_dir=self.tensorboard_dir, filename_suffix=self.name)
+        train_size = len(train_dataloader)
+        exp_id = randint(0, 10000)
+        exp_tb_dir = os.path.join(self.tensorboard_dir, str(exp_id))
+
+        writer = SummaryWriter(log_dir=exp_tb_dir, filename_suffix=self.name)
 
         print("=====================\n||STARTING THE LOOP||\n=====================\n\n")
 
 
         for epoch in range(n_epoch):
             print("  |￣￣￣￣￣￣|\n  |  EPOCH: %s  |\n  |＿＿＿＿＿＿|\n(\\__/) || \n(•ㅅ•) || \n/ 　 づ" % epoch)
-            tqdm_dl = tqdm(train_dataloader)
+            if self.using_tqdm_notebook:
+                tqdm_dl = tqdm_notebook(train_dataloader)
+            else:
+                tqdm_dl = tqdm(train_dataloader)
 
             for i, batch in enumerate(tqdm_dl):
                 self.model.train()
@@ -106,8 +110,8 @@ class TheLoop:
                 tqdm_dl.set_description('BATCH %i; ITER %s' % (i, it))
                 tqdm_dl.set_postfix(loss=loss.item())
 
-                if self.val_rate > 0 and val_dataloader is not None:
-                    if it % self.val_rate == 0:
+                if val_dataloader is not None:
+                    if (self.val_rate > 0 and it % self.val_rate == 0) or (epoch+1 == n_epoch and i+1 == train_size):
                         print("Starting validation...")
 
                         self.model.eval()
@@ -155,16 +159,10 @@ class TheLoop:
                                      "%s_final_epoch_%s.pth" %
                                      (self.name, epoch)))
 
-        if self.val_callback is not None and best_checkpoint_name is None:
-            self.model.eval()
-            val_out = self.val_callback(model=self.model,
-                                        data=val_dataloader,
-                                        device=self.device)
-            self.model.train()
-
-            print("==================\n||FINAL METRICS")
+        if val_dataloader is not None:
+            print("\n\nFINAL METRICS\n==================")
             for k, v in val_out.items():
-                print("||%s: %s" % (k, float(v)))
+                print("|| %s: %s" % (k, float(v)))
             print("==================")
         else:
             print("\n\nBEST METRICS\n==================")
@@ -172,7 +170,7 @@ class TheLoop:
             print("|| Best checkpoint score:", best_checkpoint_score)
 
             for k, v in best_checkpoint_validation.items():
-                print("||%s: %s" % (k, float(v)))
+                print("|| %s: %s" % (k, float(v)))
             print("==================")
 
 
