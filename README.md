@@ -61,3 +61,30 @@ theloop = TheLoop(model, "CrossEntropyLoss", batch_callback,
 theloop.a(train_set, val_dataset=test_set, batch_size=32, n_epoch=10)
 
 ```
+
+## Features
+
+### Cool logs
+```
+
+=====================
+||STARTING THE LOOP||
+=====================
+
+
+  |￣￣￣￣￣￣|
+  |  EPOCH: 0  |
+  |＿＿＿＿＿＿|
+(\__/) || 
+(•ㅅ•) || 
+/ 　 づ
+BATCH 1562; ITER 1562: 100%|██████████| 1563/1563 [04:11<00:00,  4.10s/it, loss=1.19]
+Validation ready!
+Epoch checkpoint saved
+===================================
+
+==================
+||FINAL METRICS
+|| accuracy: 0.6231
+==================
+```
