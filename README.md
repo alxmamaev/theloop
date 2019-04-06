@@ -65,6 +65,10 @@ Epoch checkpoint saved
 * `val_criterion_mode` - **string** mode of selecting best checkpoint ("max" or "min")
 * `using_tqdm_notebook` - **bool** use tqdm_notebook instead tqdm 
 
+### theloop.a
+
+### theloop.ka
+
 ## To do
 * Early stopping by validation metrics
 * Pushing images to Tensorboard
