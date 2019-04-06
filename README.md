@@ -3,7 +3,7 @@
 
 ## Installing
 ```
-git submodule add
+git submodule add https://github.com/alxmamaev/theloop
 git submodule init
 ```
 
