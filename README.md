@@ -32,3 +32,12 @@ Epoch checkpoint saved
 || accuracy: 0.6231
 ==================
 ```
+
+## Features
+* Cool logs 😎
+* Tensorboard logging
+* Checkpoint saving
+* Validation
+* Selecting the best checkpoint
+* Scheduler support
+* tqdm notebook support
