@@ -22,7 +22,7 @@ class TheLoop:
                  val_criterion_key=None,
                  val_criterion_mode="max",
                  use_best_model=True,
-                 using_tqdm_notebook=False,):
+                 use_tqdm_notebook=False,):
 
 
                 assert val_criterion_mode in ["max", "min"]
