@@ -44,9 +44,7 @@ Epoch checkpoint saved
 * Early stopping by `^C`
 
 
-## Doc
-
-## TheLoop
+## Documentation 🗂
 ### Parameters: 
 * `model` - your **nn.Module** model
 * `criterion` - **string** with name of loss or **loss class**
