@@ -3,7 +3,7 @@
 
 
 ## Examples 
-* [CIFAR10 example in](https://github.com/alxmamaev/theloop/blob/master/examples/cifar10.ipynb)**
+* [CIFAR10 example](https://github.com/alxmamaev/theloop/blob/master/examples/cifar10.ipynb)
 * IMDB example *(in progress)*
 
 ## We have a cool logs 😎
