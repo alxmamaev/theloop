@@ -2,7 +2,7 @@
 *This is simpliest and useful train loop for pytorch. You can easy train your model on any dataset and dataloader.*
 
 
-## Examples 
+## Examples 🔬
 * [CIFAR10 example](https://github.com/alxmamaev/theloop/blob/master/examples/cifar10.ipynb)
 * IMDB example *(in progress)*
 * Metric learning example *(in progress)*
@@ -33,7 +33,7 @@ Epoch checkpoint saved
 ==================
 ```
 
-## Features
+## Features 📊
 * Cool logs 😎
 * Tensorboard logging
 * Checkpoint saving
