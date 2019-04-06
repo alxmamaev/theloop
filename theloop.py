@@ -12,6 +12,8 @@ class TheLoop:
                  val_callback=None,
                  optimizer="Adam",
                  optimizer_params={"lr":1e-4},
+                 scheduler=None,
+                 scheduler_params={},
                  device="cpu",
                  val_rate=-1,
                  logdir="./logs",
@@ -33,6 +35,9 @@ class TheLoop:
                 if type(optimizer) == str:
                     optimizer = optim.__dict__[optimizer]
 
+                if scheduler is not None and type(scheduler) == str:
+                    scheduler = nn.__dict__[criterion]
+
                 self.optimizer = optimizer(self.model.parameters(), **optimizer_params)
                 self.criterion = criterion()
                 self.batch_callback = batch_callback
@@ -45,6 +50,10 @@ class TheLoop:
                 self.val_criterion_mode = val_criterion_mode
                 self.using_tqdm_notebook = using_tqdm_notebook
                 self.use_best_model = use_best_model
+                if scheduler is not None:
+                    self.scheduler = scheduler(self.optimizer, **scheduler_params)
+                else:
+                    self.scheduler = None
 
                 self.checkpoint_dir = os.path.join(logdir, "checkpoints")
                 self.tensorboard_dir = os.path.join(logdir, "tb_log")
@@ -73,7 +82,7 @@ class TheLoop:
         os.makedirs(self.logdir, exist_ok=True)
         os.makedirs(self.checkpoint_dir, exist_ok=True)
         os.makedirs(self.tensorboard_dir, exist_ok=True)
-        best_checkpoint_name = None
+        best_checkpoint = None
         best_checkpoint_score = None
         best_checkpoint_validation = None
 
@@ -87,6 +96,9 @@ class TheLoop:
 
 
         for epoch in range(n_epoch):
+            if self.scheduler is not None:
+                self.scheduler.step()
+
             print("  |￣￣￣￣￣￣|\n  |  EPOCH: %s  |\n  |＿＿＿＿＿＿|\n(\\__/) || \n(•ㅅ•) || \n/ 　 づ" % epoch)
             if self.using_tqdm_notebook:
                 tqdm_dl = tqdm_notebook(train_dataloader)
@@ -123,50 +135,47 @@ class TheLoop:
 
                         print("Validation ready!")
 
-                        checkpoint_name = os.path.join(self.checkpoint_dir,
-                                                       "%s_iter-%s_epoch-%s.pth" %
-                                                       (self.name, epoch, it))
-
-                        torch.save(self.model.state_dict(), checkpoint_name)
-                        print("Checkpoint saved")
-
 
                         if self.val_criterion_key is not None:
                             val_score = float(val_out[self.val_criterion_key])
 
-                            if best_checkpoint_name is None:
-                                best_checkpoint_name = checkpoint_name
+                            if best_checkpoint is None:
+                                best_checkpoint = self.model.state_dict()
                                 best_checkpoint_score = val_score
                                 best_checkpoint_validation = val_out
 
                             else:
                                 if self.val_criterion_mode == "max" and val_score > best_checkpoint_score:
-                                    best_checkpoint_name = checkpoint_name
+                                    best_checkpoint = self.model.state_dict()
                                     best_checkpoint_score = val_score
                                     best_checkpoint_validation = val_out
 
                                 elif self.val_criterion_mode == "min" and val_score < best_checkpoint_score:
-                                    best_checkpoint_name = checkpoint_name
+                                    best_checkpoint = self.model.state_dict()
                                     best_checkpoint_score = val_score
                                     best_checkpoint_validation = val_out
 
 
                 it += 1
 
-            print("Save final checkpoint")
+            print("Save epoch checkpoint")
             torch.save(self.model.state_dict(),
                         os.path.join(self.checkpoint_dir,
-                                     "%s_final_epoch_%s.pth" %
+                                     "%s_epoch_%s.pth" %
                                      (self.name, epoch)))
 
-        if val_dataloader is not None:
+
+        if val_dataloader is None:
             print("\n\nFINAL METRICS\n==================")
             for k, v in val_out.items():
                 print("|| %s: %s" % (k, float(v)))
             print("==================")
         else:
+            torch.save(best_checkpoint,
+                       os.path.join(self.checkpoint_dir,
+                                     "%s_best.pth" %
+                                     (self.name,)))
             print("\n\nBEST METRICS\n==================")
-            print("|| Best checkpoint:", best_checkpoint_name)
             print("|| Best checkpoint score:", best_checkpoint_score)
 
             for k, v in best_checkpoint_validation.items():
@@ -175,7 +184,6 @@ class TheLoop:
 
 
             if self.use_best_model:
-                state_dict = torch.load(best_checkpoint_name)
-                self.model.load_state_dict(state_dict)
+                self.model.load_state_dict(best_checkpoint)
 
         return self.model
