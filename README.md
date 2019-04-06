@@ -65,8 +65,21 @@ Epoch checkpoint saved
 * `use_tqdm_notebook` - **bool** use tqdm_notebook instead tqdm 
 
 ### theloop.a
+*Train model from dataset*
+
+* train_dataset - torch **Dataset** for training
+* val_dataset - torch **Dataset** for validation
+* batch_size - **int** batch size
+* n_workers  - **int** number of workers
+* shuffle - **bool** shuffle dataset
+* n_epoch - **int** number of epoch
 
 ### theloop.ka
+*Train model from dataloader*
+
+* train_dataloader - torch **DataLoader** for training
+* val_dataloader - torch **DataLoader** for validation
+* n_epoch - **int** number of epoch
 
 ## To do
 * Early stopping by validation metrics
