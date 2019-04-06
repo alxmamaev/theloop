@@ -36,7 +36,7 @@ class TheLoop:
                     optimizer = optim.__dict__[optimizer]
 
                 if scheduler is not None and type(scheduler) == str:
-                    scheduler = nn.__dict__[criterion]
+                    scheduler = optim.lr_scheduler.__dict__[scheduler]
 
                 self.optimizer = optimizer(self.model.parameters(), **optimizer_params)
                 self.criterion = criterion()
@@ -163,6 +163,7 @@ class TheLoop:
                         os.path.join(self.checkpoint_dir,
                                      "%s_epoch_%s.pth" %
                                      (self.name, epoch)))
+            print("===================================\n\n")
 
 
         if val_dataloader is None:
