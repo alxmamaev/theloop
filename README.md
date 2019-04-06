@@ -61,7 +61,8 @@ Epoch checkpoint saved
 * `loss_key` - **string** key of loss in dict returned by batch_callback 
 * `val_criterion_key` - **string** key of validation in dict returned by val_callback 
 * `val_criterion_mode` - **string** mode of selecting best checkpoint ("max" or "min")
-* `using_tqdm_notebook` - **bool** use tqdm_notebook instead tqdm 
+* `use_best_model` - **bool** use best (by validation metric) model as final model 
+* `use_tqdm_notebook` - **bool** use tqdm_notebook instead tqdm 
 
 ### theloop.a
 
