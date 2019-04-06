@@ -40,4 +40,10 @@ Epoch checkpoint saved
 * Validation
 * Selecting the best checkpoint
 * Scheduler support
-* tqdm notebook support
+* Tqdm notebook support
+* Early stopping by `^C`
+
+## To do
+* Early stopping by validation metrics
+* Pushing images to Tensorboard
+* Data parallel
