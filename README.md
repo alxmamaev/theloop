@@ -1,6 +1,9 @@
 # theloop 🔄
 *This is simpliest and useful train loop for pytorch. You can easy train your model on any dataset and dataloader.*
 
+
+Simlple CIFAR10 example in [.ipynb](https://github.com/alxmamaev/theloop/blob/master/examples/cifar10.ipynb)
+
 ## We have a cool logs 😎
 ```
 
