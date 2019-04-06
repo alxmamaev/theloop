@@ -33,7 +33,7 @@ Epoch checkpoint saved
 ===================================
 
 ==================
-||FINAL METRICS
+|| FINAL METRICS
 || accuracy: 0.6231
 ==================
 ```
