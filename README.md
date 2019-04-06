@@ -60,10 +60,10 @@ Epoch checkpoint saved
 * `val_rate` - **int** rate of iteration when validation was starting
 * `logdir` - **string** path to log directory
 * `name` - **string** name of your experiment
-* `loss_key` - key of loss in dict returned by batch_callback 
-* `val_criterion_key` - key of validation in dict returned by val_callback 
-* `val_criterion_mode` - mode of selecting best checkpoint ("max" or "min")
-* `using_tqdm_notebook` - use tqdm_notebook instead tqdm 
+* `loss_key` - **string** key of loss in dict returned by batch_callback 
+* `val_criterion_key` - **string** key of validation in dict returned by val_callback 
+* `val_criterion_mode` - **string** mode of selecting best checkpoint ("max" or "min")
+* `using_tqdm_notebook` - **bool** use tqdm_notebook instead tqdm 
 
 ## To do
 * Early stopping by validation metrics
