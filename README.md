@@ -1,12 +1,7 @@
 # theloop 🔄
 *This is simpliest and useful train loop for pytorch. You can easy train your model on any dataset and dataloader.*
 
-## Simple intro into-theloop in 30s
-
-
-## Features
-
-### Cool logs 😎
+## We have a cool logs 😎
 ```
 
 =====================
@@ -15,7 +10,7 @@
 
 
   |￣￣￣￣￣￣|
-  |  EPOCH: 0  |
+  | EPOCH: 0 |
   |＿＿＿＿＿＿|
 (\__/) || 
 (•ㅅ•) || 
