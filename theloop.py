@@ -48,7 +48,7 @@ class TheLoop:
                 self.loss_key = loss_key
                 self.val_criterion_key = val_criterion_key
                 self.val_criterion_mode = val_criterion_mode
-                self.using_tqdm_notebook = using_tqdm_notebook
+                self.using_tqdm_notebook = use_tqdm_notebook
                 self.use_best_model = use_best_model
                 if scheduler is not None:
                     self.scheduler = scheduler(self.optimizer, **scheduler_params)
