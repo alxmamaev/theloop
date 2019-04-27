@@ -88,14 +88,18 @@ class TheLoop:
         best_checkpoint = None
         best_checkpoint_score = None
         best_checkpoint_validation = None
+        val_out = None
 
         train_size = len(train_dataloader)
         exp_id = randint(0, 10000)
-        exp_tb_dir = os.path.join(self.tensorboard_dir, str(exp_id))
+
+        exp_tb_dir = os.path.join(self.tensorboard_dir, f"{self.name}_{exp_id}")
+        checkpoint_dir = os.path.join(self.checkpoint_dir, f"{self.name}_{exp_id}")
+        os.makedirs(checkpoint_dir, exist_ok=True)
 
         writer = SummaryWriter(log_dir=exp_tb_dir, filename_suffix=self.name)
 
-        log_utils.start_theloop()
+        log_utils.start_theloop(self.name, exp_id, n_epoch)
         log_utils.delimeter()
 
         try:
@@ -114,7 +118,9 @@ class TheLoop:
                     batch_out = self.batch_callback(model=self.model,
                                                     criterion=self.criterion,
                                                     device=self.device,
-                                                    batch=batch)
+                                                    batch=batch,
+                                                    epoch=epoch,
+                                                    iteration=it)
 
                     loss = batch_out[self.loss_key]
                     self.optimizer.zero_grad()
@@ -165,27 +171,30 @@ class TheLoop:
 
 
                 torch.save(self.model.state_dict(),
-                            os.path.join(self.checkpoint_dir,
+                            os.path.join(checkpoint_dir,
                                          "%s_epoch_%s.pth" %
                                          (self.name, epoch)))
 
         except KeyboardInterrupt:
             log_utils.delimeter()
-            log_utils.early_stopping()
-            if val_dataloader is None:
+            log_utils.rabbit("EARLY STOP")
+            if val_out is not None:
                 log_utils.log_metrics("METRICS", val_out)
 
-        log_utils.rabbit("THE END")
-        if val_dataloader is None:
-            log_utils.log_metrics("FINAL METRICS", val_out)
-        else:
-            torch.save(best_checkpoint,
-                       os.path.join(self.checkpoint_dir,
-                                     "%s_best.pth" %
-                                     (self.name,)))
-            log_utils.log_metrics("BEST METRICS", best_checkpoint_validation)
+            return self.model
 
-            if self.use_best_model:
-                self.model.load_state_dict(best_checkpoint)
+        log_utils.rabbit("THE END")
+        if val_out is not None:
+            if self.val_criterion_key is None:
+                log_utils.log_metrics("FINAL METRICS", val_out)
+            else:
+                torch.save(best_checkpoint,
+                           os.path.join(checkpoint_dir,
+                                         "%s_best.pth" %
+                                         (self.name,)))
+                log_utils.log_metrics("BEST METRICS", best_checkpoint_validation)
+
+                if self.use_best_model:
+                    self.model.load_state_dict(best_checkpoint)
 
         return self.model

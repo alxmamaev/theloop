@@ -1,12 +1,17 @@
 from prettytable import PrettyTable
 
-def start_theloop():
-    print("""   _____ _______       _____ _______   _______ _    _ ______ _      ____   ____  _____
+def start_theloop(experiment_name, experiment_id, n_epoch):
+    print(f"""   _____ _______       _____ _______   _______ _    _ ______ _      ____   ____  _____
   / ____|__   __|/\   |  __ \__   __| |__   __| |  | |  ____| |    / __ \ / __ \|  __ \\
  | (___    | |  /  \  | |__) | | |       | |  | |__| | |__  | |   | |  | | |  | | |__) |
   \___ \   | | / /\ \ |  _  /  | |       | |  |  __  |  __| | |   | |  | | |  | |  ___/
   ____) |  | |/ ____ \| | \ \  | |       | |  | |  | | |____| |___| |__| | |__| | |
- |_____/   |_/_/    \_\_|  \_\ |_|       |_|  |_|  |_|______|______\____/ \____/|_|\n""")
+ |_____/   |_/_/    \_\_|  \_\ |_|       |_|  |_|  |_|______|______\____/ \____/|_|
+
+
+EXPERIMENT NAME: {experiment_name}
+EXPERIMENT ID: {experiment_id}
+NUM EPOCH: {n_epoch}""")
 
 
 def rabbit(message):
@@ -25,7 +30,3 @@ def log_metrics(title, metrics):
 
 def delimeter():
     print("+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+\n\n")
-
-
-def early_stopping():
-    print("EARLY STOPPING")
