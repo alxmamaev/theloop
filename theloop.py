@@ -1,9 +1,12 @@
+import os
+from random import randint
+
+from . import log_utils
+
 import torch
 from torch import nn
-from random import randint
 from torch import optim
 from torch.utils.data import DataLoader
-import os
 from tensorboardX import SummaryWriter
 from tqdm import tqdm, tqdm_notebook
 
@@ -92,97 +95,95 @@ class TheLoop:
 
         writer = SummaryWriter(log_dir=exp_tb_dir, filename_suffix=self.name)
 
-        print("=====================\n||STARTING THE LOOP||\n=====================\n\n")
+        log_utils.start_theloop()
+        log_utils.delimeter()
+
+        try:
+            for epoch in range(n_epoch):
+                if self.scheduler is not None:
+                    self.scheduler.step()
+
+                log_utils.rabbit(f"EPOCH: {epoch}")
+                if self.using_tqdm_notebook:
+                    tqdm_dl = tqdm_notebook(train_dataloader)
+                else:
+                    tqdm_dl = tqdm(train_dataloader)
+
+                for i, batch in enumerate(tqdm_dl):
+                    self.model.train()
+                    batch_out = self.batch_callback(model=self.model,
+                                                    criterion=self.criterion,
+                                                    device=self.device,
+                                                    batch=batch)
+
+                    loss = batch_out[self.loss_key]
+                    self.optimizer.zero_grad()
+                    loss.backward()
+                    self.optimizer.step()
+
+                    self.tb_log(writer, batch_out, it)
+
+                    tqdm_dl.set_description('BATCH %i; ITER %s' % (i, it))
+                    tqdm_dl.set_postfix(loss=loss.item())
+
+                    if val_dataloader is not None:
+                        if (self.val_rate > 0 and it % self.val_rate == 0) or (i+1 == train_size):
+                            self.model.eval()
+                            val_out = self.val_callback(model=self.model,
+                                                        data=val_dataloader,
+                                                        device=self.device,
+                                                        epoch=epoch,
+                                                        iteration=it)
+                            self.model.train()
+                            self.tb_log(writer, val_out, it)
+
+                            if self.val_criterion_key is not None:
+                                val_score = float(val_out[self.val_criterion_key])
+
+                                if best_checkpoint is None:
+                                    best_checkpoint = self.model.state_dict()
+                                    best_checkpoint_score = val_score
+                                    best_checkpoint_validation = val_out
+
+                                else:
+                                    if self.val_criterion_mode == "max" and val_score > best_checkpoint_score:
+                                        best_checkpoint = self.model.state_dict()
+                                        best_checkpoint_score = val_score
+                                        best_checkpoint_validation = val_out
+
+                                    elif self.val_criterion_mode == "min" and val_score < best_checkpoint_score:
+                                        best_checkpoint = self.model.state_dict()
+                                        best_checkpoint_score = val_score
+                                        best_checkpoint_validation = val_out
 
 
-        for epoch in range(n_epoch):
-            if self.scheduler is not None:
-                self.scheduler.step()
-
-            print("  |￣￣￣￣￣￣|\n  |  EPOCH: %s  |\n  |＿＿＿＿＿＿|\n(\\__/) || \n(•ㅅ•) || \n/ 　 づ" % epoch)
-            if self.using_tqdm_notebook:
-                tqdm_dl = tqdm_notebook(train_dataloader)
-            else:
-                tqdm_dl = tqdm(train_dataloader)
-
-            for i, batch in enumerate(tqdm_dl):
-                self.model.train()
-                batch_out = self.batch_callback(model=self.model,
-                                                criterion=self.criterion,
-                                                device=self.device,
-                                                batch=batch)
-
-                loss = batch_out[self.loss_key]
-                self.optimizer.zero_grad()
-                loss.backward()
-                self.optimizer.step()
-
-                self.tb_log(writer, batch_out, it)
-
-                tqdm_dl.set_description('BATCH %i; ITER %s' % (i, it))
-                tqdm_dl.set_postfix(loss=loss.item())
+                    it += 1
 
                 if val_dataloader is not None:
-                    if (self.val_rate > 0 and it % self.val_rate == 0) or (epoch+1 == n_epoch and i+1 == train_size):
-                        print("Starting validation...")
-
-                        self.model.eval()
-                        val_out = self.val_callback(model=self.model,
-                                                    data=val_dataloader,
-                                                    device=self.device)
-                        self.model.train()
-                        self.tb_log(writer, val_out, it)
-
-                        print("Validation ready!")
+                    log_utils.log_metrics("EPOCH METRICS", val_out)
+                log_utils.delimeter()
 
 
-                        if self.val_criterion_key is not None:
-                            val_score = float(val_out[self.val_criterion_key])
+                torch.save(self.model.state_dict(),
+                            os.path.join(self.checkpoint_dir,
+                                         "%s_epoch_%s.pth" %
+                                         (self.name, epoch)))
 
-                            if best_checkpoint is None:
-                                best_checkpoint = self.model.state_dict()
-                                best_checkpoint_score = val_score
-                                best_checkpoint_validation = val_out
+        except KeyboardInterrupt:
+            log_utils.delimeter()
+            log_utils.early_stopping()
+            if val_dataloader is None:
+                log_utils.log_metrics("METRICS", val_out)
 
-                            else:
-                                if self.val_criterion_mode == "max" and val_score > best_checkpoint_score:
-                                    best_checkpoint = self.model.state_dict()
-                                    best_checkpoint_score = val_score
-                                    best_checkpoint_validation = val_out
-
-                                elif self.val_criterion_mode == "min" and val_score < best_checkpoint_score:
-                                    best_checkpoint = self.model.state_dict()
-                                    best_checkpoint_score = val_score
-                                    best_checkpoint_validation = val_out
-
-
-                it += 1
-
-            print("Save epoch checkpoint")
-            torch.save(self.model.state_dict(),
-                        os.path.join(self.checkpoint_dir,
-                                     "%s_epoch_%s.pth" %
-                                     (self.name, epoch)))
-            print("===================================\n\n")
-
-
+        log_utils.rabbit("THE END")
         if val_dataloader is None:
-            print("\n\nFINAL METRICS\n==================")
-            for k, v in val_out.items():
-                print("|| %s: %s" % (k, float(v)))
-            print("==================")
+            log_utils.log_metrics("FINAL METRICS", val_out)
         else:
             torch.save(best_checkpoint,
                        os.path.join(self.checkpoint_dir,
                                      "%s_best.pth" %
                                      (self.name,)))
-            print("\n\nBEST METRICS\n==================")
-            print("|| Best checkpoint score:", best_checkpoint_score)
-
-            for k, v in best_checkpoint_validation.items():
-                print("|| %s: %s" % (k, float(v)))
-            print("==================")
-
+            log_utils.log_metrics("BEST METRICS", best_checkpoint_validation)
 
             if self.use_best_model:
                 self.model.load_state_dict(best_checkpoint)
