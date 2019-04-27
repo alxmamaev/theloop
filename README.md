@@ -15,27 +15,46 @@ git submodule init
 
 ## We have a cool logs 😎
 ```
+_____ _______       _____ _______   _______ _    _ ______ _      ____   ____  _____
+  / ____|__   __|/\   |  __ \__   __| |__   __| |  | |  ____| |    / __ \ / __ \|  __ \
+ | (___    | |  /  \  | |__) | | |       | |  | |__| | |__  | |   | |  | | |  | | |__) |
+  \___ \   | | / /\ \ |  _  /  | |       | |  |  __  |  __| | |   | |  | | |  | |  ___/
+  ____) |  | |/ ____ \| | \ \  | |       | |  | |  | | |____| |___| |__| | |__| | |
+ |_____/   |_/_/    \_\_|  \_\ |_|       |_|  |_|  |_|______|______\____/ \____/|_|
 
-=====================
-||STARTING THE LOOP||
-=====================
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
 
   |￣￣￣￣￣￣|
-  | EPOCH: 0 |
+    EPOCH: 0  
   |＿＿＿＿＿＿|
-(\__/) || 
-(•ㅅ•) || 
+(\__/) ||
+(•ㅅ•) ||
 / 　 づ
-BATCH 1562; ITER 1562: 100%|██████████| 1563/1563 [04:11<00:00,  4.10s/it, loss=1.19]
-Validation ready!
-Epoch checkpoint saved
-===================================
+BATCH 1562; ITER 1562: 100%|██████████| 1563/1563 [03:59<00:00,  3.99s/it, loss=1.63]
+  0%|          | 0/1563 [00:00<?, ?it/s]
++-------------------+
+|   EPOCH METRICS   |
++----------+--------+
+|  Metric  | Vlaue  |
++----------+--------+
+| accuracy | 0.6173 |
++----------+--------+
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
-==================
-|| FINAL METRICS
-|| accuracy: 0.6231
-==================
+  |￣￣￣￣￣￣|
+    THE END  
+  |＿＿＿＿＿＿|
+(\__/) ||
+(•ㅅ•) ||
+/ 　 づ
++-------------------+
+|    BEST METRICS   |
++----------+--------+
+|  Metric  | Vlaue  |
++----------+--------+
+| accuracy | 0.6914 |
++----------+--------+
 ```
 
 ## Features 📊
@@ -50,7 +69,7 @@ Epoch checkpoint saved
 
 
 ## Documentation 🗂
-### Parameters: 
+### Parameters:
 * `model` - your **nn.Module** model
 * `criterion` - **string** with name of loss or **loss class**
 * `batch_callback` - function of batch callback (look a examples)
@@ -63,11 +82,11 @@ Epoch checkpoint saved
 * `val_rate` - **int** rate of iteration when validation was starting
 * `logdir` - **string** path to log directory
 * `name` - **string** name of your experiment
-* `loss_key` - **string** key of loss in dict returned by batch_callback 
-* `val_criterion_key` - **string** key of validation in dict returned by val_callback 
+* `loss_key` - **string** key of loss in dict returned by batch_callback
+* `val_criterion_key` - **string** key of validation in dict returned by val_callback
 * `val_criterion_mode` - **string** mode of selecting best checkpoint ("max" or "min")
-* `use_best_model` - **bool** use best (by validation metric) model as final model 
-* `use_tqdm_notebook` - **bool** use tqdm_notebook instead tqdm 
+* `use_best_model` - **bool** use best (by validation metric) model as final model
+* `use_tqdm_notebook` - **bool** use tqdm_notebook instead tqdm
 
 ### theloop.a
 *Train model from dataset*
