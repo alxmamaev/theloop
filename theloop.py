@@ -8,13 +8,13 @@ from torch import nn
 from torch import optim
 from torch.utils.data import DataLoader
 from tensorboardX import SummaryWriter
-from tqdm import tqdm, tqdm_notebook
+from tqdm.auto import tqdm
 
 class TheLoop:
     def __init__(self, model, criterion, batch_callback,
                  val_callback=None,
                  optimizer="Adam",
-                 optimizer_params={"lr":1e-4},
+                 optimizer_params={"lr":1e-2},
                  scheduler=None,
                  scheduler_params={},
                  device="cpu",
@@ -24,8 +24,7 @@ class TheLoop:
                  loss_key="loss",
                  val_criterion_key=None,
                  val_criterion_mode="max",
-                 use_best_model=True,
-                 use_tqdm_notebook=False,):
+                 use_best_model=True):
 
 
                 assert val_criterion_mode in ["max", "min"]
@@ -51,7 +50,6 @@ class TheLoop:
                 self.loss_key = loss_key
                 self.val_criterion_key = val_criterion_key
                 self.val_criterion_mode = val_criterion_mode
-                self.using_tqdm_notebook = use_tqdm_notebook
                 self.use_best_model = use_best_model
                 if scheduler is not None:
                     self.scheduler = scheduler(self.optimizer, **scheduler_params)
@@ -108,10 +106,7 @@ class TheLoop:
                     self.scheduler.step()
 
                 log_utils.rabbit(f"EPOCH: {epoch}")
-                if self.using_tqdm_notebook:
-                    tqdm_dl = tqdm_notebook(train_dataloader)
-                else:
-                    tqdm_dl = tqdm(train_dataloader)
+                tqdm_dl = tqdm(train_dataloader)
 
                 for i, batch in enumerate(tqdm_dl):
                     self.model.train()
