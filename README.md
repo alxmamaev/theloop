@@ -3,8 +3,9 @@
 
 ## Installing
 ```
-git submodule add https://github.com/alxmamaev/theloop
-git submodule init
+git clone https://github.com/alxmamaev/theloop
+cd theloop
+python setup.py install
 ```
 
 ## Examples 🔬
