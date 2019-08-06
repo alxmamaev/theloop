@@ -1,4 +1,4 @@
 torch==1.0.1
-ptable
+prettytable
 tensorboardX
 tqdm

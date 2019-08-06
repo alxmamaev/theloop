@@ -10,6 +10,8 @@ from torch.utils.data import DataLoader
 from tensorboardX import SummaryWriter
 from tqdm.auto import tqdm
 
+from .states import BatchState, ValidationState
+
 class TheLoop:
     def __init__(self, model, criterion, batch_callback,
                  val_callback=None,
@@ -21,7 +23,6 @@ class TheLoop:
                  val_rate=-1,
                  logdir="./logs",
                  name="experiment",
-                 loss_key="loss",
                  val_criterion_key=None,
                  val_criterion_mode="max",
                  use_best_model=True):
@@ -47,7 +48,6 @@ class TheLoop:
                 self.logdir = logdir
                 self.val_rate = val_rate
                 self.name = name
-                self.loss_key = loss_key
                 self.val_criterion_key = val_criterion_key
                 self.val_criterion_mode = val_criterion_mode
                 self.use_best_model = use_best_model
@@ -96,6 +96,19 @@ class TheLoop:
         os.makedirs(checkpoint_dir, exist_ok=True)
 
         writer = SummaryWriter(log_dir=exp_tb_dir, filename_suffix=self.name)
+        batch_state = BatchState(model=self.model,
+                                device=self.device,
+                                summary_writer=writer,
+                                criterion=self.criterion,
+                                optimizer=self.optimizer,
+                                callback_func=self.batch_callback)
+
+
+        valid_state = ValidationState(model=self.model,
+                                     device=self.device,
+                                     summary_writer=writer,
+                                     callback_func=self.val_callback)
+
 
         log_utils.start_theloop(self.name, exp_id, n_epoch)
         log_utils.delimeter()
@@ -110,58 +123,19 @@ class TheLoop:
 
                 for i, batch in enumerate(tqdm_dl):
                     self.model.train()
-                    batch_out = self.batch_callback(model=self.model,
-                                                    criterion=self.criterion,
-                                                    device=self.device,
-                                                    batch=batch,
-                                                    epoch=epoch,
-                                                    iteration=it)
+                    batch_state.step(batch)
 
-                    loss = batch_out[self.loss_key]
-                    self.optimizer.zero_grad()
-                    loss.backward()
-                    self.optimizer.step()
-
-                    self.tb_log(writer, batch_out, it)
-
-                    tqdm_dl.set_description('BATCH %i; ITER %s' % (i, it))
-                    tqdm_dl.set_postfix(loss=loss.item())
+                    tqdm_dl.set_description('BATCH %i; ITER %s' % (i, batch_state.it))
+                    tqdm_dl.set_postfix(loss=batch_state.loss.item())
 
                     if val_dataloader is not None:
-                        if (self.val_rate > 0 and it % self.val_rate == 0) or (i+1 == train_size):
+                        if (self.val_rate > 0 and batch_state.it % self.val_rate == 0) or (i+1 == train_size):
                             self.model.eval()
-                            val_out = self.val_callback(model=self.model,
-                                                        data=val_dataloader,
-                                                        device=self.device,
-                                                        epoch=epoch,
-                                                        iteration=it)
+                            valid_state.step(val_dataloader)
                             self.model.train()
-                            self.tb_log(writer, val_out, it)
-
-                            if self.val_criterion_key is not None:
-                                val_score = float(val_out[self.val_criterion_key])
-
-                                if best_checkpoint is None:
-                                    best_checkpoint = self.model.state_dict()
-                                    best_checkpoint_score = val_score
-                                    best_checkpoint_validation = val_out
-
-                                else:
-                                    if self.val_criterion_mode == "max" and val_score > best_checkpoint_score:
-                                        best_checkpoint = self.model.state_dict()
-                                        best_checkpoint_score = val_score
-                                        best_checkpoint_validation = val_out
-
-                                    elif self.val_criterion_mode == "min" and val_score < best_checkpoint_score:
-                                        best_checkpoint = self.model.state_dict()
-                                        best_checkpoint_score = val_score
-                                        best_checkpoint_validation = val_out
-
-
-                    it += 1
 
                 if val_dataloader is not None:
-                    log_utils.log_metrics("EPOCH METRICS", val_out)
+                    log_utils.log_metrics("EPOCH METRICS", valid_state.metrics)
                 log_utils.delimeter()
 
 
@@ -174,22 +148,22 @@ class TheLoop:
             log_utils.delimeter()
             log_utils.rabbit("EARLY STOP")
             if val_out is not None:
-                log_utils.log_metrics("METRICS", val_out)
+                log_utils.log_metrics("METRICS", valid_state.metrics)
 
             return self.model
 
         log_utils.rabbit("THE END")
         if val_out is not None:
             if self.val_criterion_key is None:
-                log_utils.log_metrics("FINAL METRICS", val_out)
+                log_utils.log_metrics("FINAL METRICS", valid_state.metrics)
             else:
-                torch.save(best_checkpoint,
+                torch.save(valid_state._best_checkpoint,
                            os.path.join(checkpoint_dir,
                                          "%s_best.pth" %
                                          (self.name,)))
-                log_utils.log_metrics("BEST METRICS", best_checkpoint_validation)
+                log_utils.log_metrics("BEST METRICS", valid_state._best_checkpoint_metrics)
 
                 if self.use_best_model:
-                    self.model.load_state_dict(best_checkpoint)
+                    self.model.load_state_dict(valid_state._best_checkpoint)
 
         return self.model
